@@ -38,11 +38,12 @@ from lm_eval.models.utils import (
     stop_sequences_criteria,
 )
 
+import mingpt
 
 eval_logger = utils.eval_logger
 
 
-@register_model("hf-auto", "hf", "huggingface")
+@register_model("minGPT")
 class HFLM(TemplateLM):
     """
     An abstracted Huggingface model class. Enables usage with both models of
@@ -56,18 +57,15 @@ class HFLM(TemplateLM):
 
     def __init__(
         self,
-        pretrained: Union[str, transformers.PreTrainedModel],
+        pretrained: Union[str, mingpt.models.GPT],
         backend: Literal["default", "causal", "seq2seq"] = "default",
         # override whether the model should be treated as decoder-only (causal) or encoder-decoder (seq2seq)
         revision: Optional[str] = "main",
         subfolder: Optional[str] = None,
-        tokenizer: Optional[
-            Union[
-                str,
-                transformers.PreTrainedTokenizer,
-                transformers.PreTrainedTokenizerFast,
-            ]
-        ] = None,
+        tokenizer: Union[
+            transformers.models.gpt2.tokenization_gpt2_fast.GPT2TokenizerFast,
+            transformers.models.gpt2.tokenization_gpt2.GPT2Tokenizer
+        ],
         truncation: Optional[bool] = False,
         logits_cache: bool = True,
         max_length: Optional[int] = None,
@@ -643,12 +641,12 @@ class HFLM(TemplateLM):
 
     def _create_tokenizer(
         self,
-        pretrained: Union[str, transformers.PreTrainedModel],
+        pretrained: Union[str, minGPT.model.GPT],
         tokenizer: Optional[
             Union[
                 str,
-                transformers.PreTrainedTokenizer,
-                transformers.PreTrainedTokenizerFast,
+                transformers.models.gpt2.tokenization_gpt2_fast.GPT2TokenizerFast,
+                transformers.models.gpt2.tokenization_gpt2.GPT2Tokenizer
             ]
         ],
         revision: Optional[str] = "main",
@@ -672,8 +670,8 @@ class HFLM(TemplateLM):
                 )
             else:
                 assert isinstance(
-                    tokenizer, transformers.PreTrainedTokenizer
-                ) or isinstance(tokenizer, transformers.PreTrainedTokenizerFast)
+                    tokenizer, transformers.models.gpt2.tokenization_gpt2.GPT2Tokenizer
+                ) or isinstance(tokenizer, transformers.models.gpt2.tokenization_gpt2_fast.GPT2TokenizerFast)
                 self.tokenizer = tokenizer
         else:
             # Get tokenizer based on 'pretrained'

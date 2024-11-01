@@ -9,6 +9,7 @@ from collections import defaultdict
 import torch
 from torch.utils.data.dataloader import DataLoader
 from mingpt.utils import CfgNode as CN
+import numpy as np
 
 class Trainer:
 
@@ -78,6 +79,8 @@ class Trainer:
         self.iter_num = 0
         self.iter_time = time.time()
         data_iter = iter(train_loader)
+        time_per_batch = []
+        losses = []
         while True:
 
             # fetch the next batch (x, y) and re-init iterator if needed
@@ -91,6 +94,7 @@ class Trainer:
 
             # forward the model
             logits, self.loss = model(x, y)
+            losses.append(self.loss.item())
 
             # backprop and update the parameters
             model.zero_grad(set_to_none=True)
@@ -103,6 +107,17 @@ class Trainer:
             tnow = time.time()
             self.iter_dt = tnow - self.iter_time
             self.iter_time = tnow
+            time_per_batch.append(self.iter_dt)
+            print(7200 / (sum(time_per_batch) / len(time_per_batch)))
+
+            if self.iter_num % 17600 == 0 :
+                torch.save({
+                    'iter_num': self.iter_num,
+                    'model_state_dict': model.state_dict(),
+                    'optimizer_state_dict': self.optimizer.state_dict(),
+                    'config': config
+                }, f'checkpoint_{self.iter_num}.pth')
+                np.save('losses.npy', np.array(losses))
 
             # termination conditions
             if config.max_iters is not None and self.iter_num >= config.max_iters:

@@ -3,3 +3,7 @@ __pycache__/
 *.swp
 .env
 .pylintrc
+lm_eval/
+*.egg-info
+build/*
+!lm_eval/models/huggingface.py

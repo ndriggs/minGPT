@@ -101,3 +101,54 @@ class CfgNode:
             # overwrite the attribute
             print("command line overwriting config attribute %s with %s" % (key, val))
             setattr(obj, leaf_key, val)
+
+
+def collate_fn(batch):
+    # Sort the batch in descending order of length
+    batch.sort(key=lambda x: len(x), reverse=True)
+    
+    # Get the length of each sequence
+    # lengths = torch.tensor([len(x) for x in batch])
+    
+    # Pad the sequences
+    padded_batch = torch.nn.utils.rnn.pad_sequence(batch, batch_first=True, padding_value=0)
+    
+    # Create input and target tensors
+    input_ids = padded_batch[:, :-1]
+    target_ids = padded_batch[:, 1:]
+    
+    return input_ids, target_ids #, lengths
+
+
+class ResumableSampler(torch.utils.data.Sampler):
+    def __init__(self, data_source, shuffle=True):
+        self.data_source = data_source
+        self.shuffle = shuffle
+        self.indices = list(range(len(data_source)))
+        self.current_position = 0
+        
+        if self.shuffle:
+            random.shuffle(self.indices)
+    
+    def __iter__(self):
+        return self
+    
+    def __next__(self):
+        if self.current_position == len(self.indices):
+            raise StopIteration
+        item = self.indices[self.current_position]
+        self.current_position += 1
+        return item
+    
+    def __len__(self):
+        return len(self.data_source)
+    
+    def state_dict(self):
+        return {
+            'indices': self.indices,
+            'current_position': self.current_position
+        }
+    
+    def load_state_dict(self, state_dict):
+        self.indices = state_dict['indices']
+        self.current_position = state_dict['current_position']
