@@ -1,0 +1,7 @@
+torch
+transformers
+sacrebleu
+sqlitedict
+accelerate
+peft
+more-itertools

@@ -7,3 +7,7 @@ lm_eval/
 *.egg-info
 build/*
 !lm_eval/models/huggingface.py
+*.out
+*.err
+*.npy
+*.pth

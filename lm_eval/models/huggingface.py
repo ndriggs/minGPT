@@ -57,7 +57,7 @@ class HFLM(TemplateLM):
 
     def __init__(
         self,
-        pretrained: Union[str, mingpt.models.GPT],
+        pretrained: Union[str, mingpt.model.GPT],
         backend: Literal["default", "causal", "seq2seq"] = "default",
         # override whether the model should be treated as decoder-only (causal) or encoder-decoder (seq2seq)
         revision: Optional[str] = "main",
@@ -65,7 +65,7 @@ class HFLM(TemplateLM):
         tokenizer: Union[
             transformers.models.gpt2.tokenization_gpt2_fast.GPT2TokenizerFast,
             transformers.models.gpt2.tokenization_gpt2.GPT2Tokenizer
-        ],
+        ] = None,
         truncation: Optional[bool] = False,
         logits_cache: bool = True,
         max_length: Optional[int] = None,
@@ -97,7 +97,7 @@ class HFLM(TemplateLM):
             )
             assert not parallelize, "`parallelize=True` is not compatible with passing pre-initialized model to `pretrained`"
             self._model = pretrained
-            self._device = self._model.device
+            self._device = device
             self._config = self._model.config
             gpus = 0
 
@@ -198,7 +198,7 @@ class HFLM(TemplateLM):
         # access self._model through self.model property outside this method
         if isinstance(self.model, torch.nn.Module):
             self.model.eval()
-            self.model.tie_weights()
+            # self.model.tie_weights()
 
         self.truncation = truncation
         self.logits_cache = logits_cache
@@ -641,7 +641,7 @@ class HFLM(TemplateLM):
 
     def _create_tokenizer(
         self,
-        pretrained: Union[str, minGPT.model.GPT],
+        pretrained: Union[str, mingpt.model.GPT],
         tokenizer: Optional[
             Union[
                 str,
@@ -829,7 +829,7 @@ class HFLM(TemplateLM):
                 ).logits
             else:
                 assert self.AUTO_MODEL_CLASS == transformers.AutoModelForCausalLM
-                return self.model(inps).logits
+                return self.model(inps)[0] # .logits
 
     def _model_generate(self, context, max_length, stop, **generation_kwargs):
         # temperature = 0.0 if not set
