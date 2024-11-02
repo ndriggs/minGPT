@@ -5,3 +5,4 @@ sqlitedict
 accelerate
 peft
 more-itertools
+-e .
