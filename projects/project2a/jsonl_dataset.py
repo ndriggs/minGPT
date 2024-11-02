@@ -12,7 +12,13 @@ class JSONLDataset(Dataset):
                 if (i > 10000) and head :
                     break
         self.tokenizer = AutoTokenizer.from_pretrained("gpt2")
-        self.tokenizer.pad_token = self.tokenizer.eos_token
+        self.tokenizer.pad_token = '<pad>'
+        self.tokenizer.padding_side = 'left'
+
+        # add ul2 sentinel tokens to tokenizer
+        new_tokens = ['[S2S] ', '[NLU] ', '[NLG] '] + [f'<extra_id_{i}>' for i in range(100)]
+        new_tokens = set(new_tokens) - set(self.tokenizer.vocab.keys()) 
+        self.tokenizer.add_tokens(list(new_tokens))
 
     def __len__(self):
         return len(self.data)
@@ -23,3 +29,6 @@ class JSONLDataset(Dataset):
 
     def get_vocab_size(self):
         return len(self.tokenizer)
+
+    def get_block_size(self):
+        return self.tokenizer.model_max_length

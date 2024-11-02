@@ -110,12 +110,13 @@ class Trainer:
             time_per_batch.append(self.iter_dt)
             print(7200 / (sum(time_per_batch) / len(time_per_batch)))
 
-            if self.iter_num % 17600 == 0 :
+            if self.iter_num % 4200 == 0 : 
                 torch.save({
                     'iter_num': self.iter_num,
+                    'model_config': model.config,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': self.optimizer.state_dict(),
-                    'config': config
+                    'trainer_config': config
                 }, f'checkpoint_{self.iter_num}.pth')
                 np.save('losses.npy', np.array(losses))
 

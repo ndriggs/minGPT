@@ -6,19 +6,19 @@ from mingpt.trainer import Trainer
 from jsonl_dataset import JSONLDataset
 
 
-dataset = JSONLDataset('/nobackup/archive/usr/dw87/pile_data_10.jsonl')
+dataset = JSONLDataset('/nobackup/archive/usr/dw87/pile_data_10.jsonl', head=False)
 
 model_config = GPT.get_default_config()
-model_config.model_type = 'gpt-micro'
+model_config.model_type = 'gpt2-large'
 model_config.vocab_size = dataset.get_vocab_size()
-model_config.block_size = 1024 # gpt2 max length
+model_config.block_size = dataset.get_block_size() # gpt2 max length
 model = GPT(model_config)
 
 train_config = Trainer.get_default_config()
 train_config.learning_rate = 4e-6 
 train_config.max_iters = 10000000
 train_config.num_workers = 0
-train_config.batch_size = 16
+train_config.batch_size = 4
 trainer = Trainer(train_config, model, dataset)
 
 def batch_end_callback(trainer):
