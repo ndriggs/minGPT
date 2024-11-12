@@ -37,7 +37,7 @@ class JSONLDataset(Dataset):
     def regular_denoising(self, text) :
         percent_tokens_corrupted = 0.15
         average_span_length = 3.5
-        tokens = self.tokenizer(text, truncation=True, max_length=978).input_ids
+        tokens = self.tokenizer(text, truncation=True, max_length=942).input_ids
         num_corrupted_spans = np.round((len(tokens)*percent_tokens_corrupted)/average_span_length).astype(int)
         span_positions = (len(tokens)/(num_corrupted_spans+1))*np.arange(num_corrupted_spans+1)
         new_input_tokens = [self.tokenizer('[NLU] ').input_ids[0]]
@@ -51,8 +51,8 @@ class JSONLDataset(Dataset):
             targets.extend(list(tokens[span_position2:span_position2+span_length]))
         new_input_tokens.extend(list(tokens[span_positions[-1]+span_length:]))
         new_input_tokens.append(self.tokenizer.pad_token_id)
+        # should combine and then add padding til its 1024
         sequence = torch.LongTensor(new_input_tokens + targets)
         targets_start = len(new_input_tokens)
         return sequence, targets_start
 
-        
