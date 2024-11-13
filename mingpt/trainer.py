@@ -62,6 +62,7 @@ class Trainer:
     def run(self):
         model, config = self.model, self.config
 
+        print('inside run function')
         # setup the optimizer
         self.optimizer = model.configure_optimizers(config)
 
@@ -108,7 +109,7 @@ class Trainer:
             self.iter_dt = tnow - self.iter_time
             self.iter_time = tnow
             time_per_batch.append(self.iter_dt)
-            print(7200 / (sum(time_per_batch) / len(time_per_batch)))
+            print(14400 / (sum(time_per_batch) / len(time_per_batch)))
 
             if self.iter_num % 4200 == 0 : 
                 torch.save({
