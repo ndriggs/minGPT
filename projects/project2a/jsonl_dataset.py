@@ -39,20 +39,42 @@ class JSONLDataset(Dataset):
         average_span_length = 3.5
         tokens = self.tokenizer(text, truncation=True, max_length=942).input_ids
         num_corrupted_spans = np.round((len(tokens)*percent_tokens_corrupted)/average_span_length).astype(int)
-        span_positions = (len(tokens)/(num_corrupted_spans+1))*np.arange(num_corrupted_spans+1)
+        span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
+        span_starts.sort()
+        span_lengths = np.random.randint(2,6, size=num_corrupted_spans)
+        while any([any((span_start > span_starts) & (span_start <= span_starts + span_lengths)) for span_start in span_starts]) :
+            span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
+            span_starts.sort()
+            span_lengths = np.random.randint(2,6, size=num_corrupted_spans)
         new_input_tokens = [self.tokenizer('[NLU] ').input_ids[0]]
         targets = []
-        span_length = 0
-        for i, (span_position1, span_position2) in enumerate(zip(span_positions[:-1], span_positions[1:])) :
-            new_input_tokens.extend(list(tokens[span_position1+span_length:span_position2]))
+        last_span_start = 0
+        last_span_length = 0
+        for i, (span_length, span_start) in enumerate(zip(span_lengths, span_starts)) :
+            new_input_tokens.extend(list(tokens[last_span_start+last_span_length:span_starts]))
             new_input_tokens.append(self.tokenizer(f'<extra_id_{i}>').input_ids[0])
             targets.append(self.tokenizer(f'<extra_id_{i}>').input_ids[0])
-            span_length = np.random.randint(2,6)
-            targets.extend(list(tokens[span_position2:span_position2+span_length]))
-        new_input_tokens.extend(list(tokens[span_positions[-1]+span_length:]))
+            targets.extend(list(tokens[span_start:span_start+span_length]))
+            last_span_start = span_start
+            last_span_length = span_length
+        new_input_tokens.extend(list(tokens[last_span_start+last_span_length:]))
         new_input_tokens.append(self.tokenizer.pad_token_id)
         # should combine and then add padding til its 1024
         sequence = torch.LongTensor(new_input_tokens + targets)
         targets_start = len(new_input_tokens)
         return sequence, targets_start
+    
+    def sequential_denoising(self, text) :
+        tokens = self.tokenizer(text, truncation=True, max_length=1020).input_ids
+        span_start = np.round(len(tokens)*0.75).astype(int)
+        new_input_tokens = [self.tokenizer('[S2S] ').input_ids[0]] + list(tokens[:span_start]) \
+            + [self.tokenizer('<extra_id_0>').input_ids[0], self.tokenizer.pad_token_id]
+        targets = list(tokens[span_start:])
+        sequence = torch.LongTensor(new_input_tokens + targets)
+        targets_start = len(new_input_tokens)
+        return sequence, targets_start
+    
+    def extreme_denoising(self, text) :
+        pass
+
 
