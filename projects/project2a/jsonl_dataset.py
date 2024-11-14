@@ -31,9 +31,11 @@ class JSONLDataset(Dataset):
             tokens, targets_start = self.sequential_denoising(self.data[idx])
         elif denoising_type == 'R' :
             tokens, targets_start = self.regular_denoising(self.data[idx])
-        elif denoising_type == 'X' :
+        elif denoising_type == 'X' :            
             tokens, targets_start = self.extreme_denoising(self.data[idx])
-        return tokens[:-1], tokens[1:]
+        targets = tokens[1:]    
+        targets[:targets_start-1] = torch.full((targets_start-1), -1)            
+        return targets_start, tokens[:-1], targets
 
     def get_vocab_size(self):
         return len(self.tokenizer)
