@@ -109,9 +109,9 @@ class Trainer:
             self.iter_dt = tnow - self.iter_time
             self.iter_time = tnow
             time_per_batch.append(self.iter_dt)
-            print(14400 / (sum(time_per_batch) / len(time_per_batch)))
+            print(19800 / (sum(time_per_batch) / len(time_per_batch)))
 
-            if self.iter_num % 4200 == 0 : 
+            if self.iter_num % 500000 == 0 : 
                 torch.save({
                     'iter_num': self.iter_num,
                     'model_config': model.config,

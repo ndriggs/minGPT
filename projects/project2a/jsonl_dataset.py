@@ -25,14 +25,14 @@ class JSONLDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        # tokens = self.tokenizer(self.data[idx], padding='max_length', truncation=True, return_tensors="pt").input_ids[0]
-        denoising_type = np.random.choice(['S', 'R', 'X'], p=[0.5, 0.25, 0.25])
-        if denoising_type == 'S' :
-            tokens, targets_start = self.sequential_denoising(self.data[idx])
-        elif denoising_type == 'R' :
-            tokens, targets_start = self.regular_denoising(self.data[idx])
-        elif denoising_type == 'X' :
-            tokens, targets_start = self.extreme_denoising(self.data[idx])
+        tokens = self.tokenizer(self.data[idx], truncation=True, return_tensors="pt").input_ids[0]
+        # denoising_type = np.random.choice(['S', 'R', 'X'], p=[0.5, 0.25, 0.25])
+        # if denoising_type == 'S' :
+        #     tokens, targets_start = self.sequential_denoising(self.data[idx])
+        # elif denoising_type == 'R' :
+        #     tokens, targets_start = self.regular_denoising(self.data[idx])
+        # elif denoising_type == 'X' :
+        #     tokens, targets_start = self.extreme_denoising(self.data[idx])
         return tokens[:-1], tokens[1:]
 
     def get_vocab_size(self):
@@ -51,8 +51,12 @@ class JSONLDataset(Dataset):
         span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
         span_starts.sort()
         span_lengths = np.random.randint(min_span_len, max_span_len+1, size=num_corrupted_spans)
+        i = 0
         while any([any((span_start > span_starts) & (span_start <= span_starts + span_lengths)) for span_start in span_starts]) \
              or any(span_starts + span_lengths > len(tokens)) :
+            i += 1
+            if i >= 10000 :
+                return tokens, 1 # we couldn't get a span set that worked, so don't corrupt, maybe not enough tokens 
             span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
             span_starts.sort()
             span_lengths = np.random.randint(min_span_len, max_span_len+1, size=num_corrupted_spans)
