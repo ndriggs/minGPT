@@ -53,8 +53,14 @@ class JSONLDataset(Dataset):
         span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
         span_starts.sort()
         span_lengths = np.random.randint(min_span_len, max_span_len+1, size=num_corrupted_spans)
+        i = 0
         while any([any((span_start > span_starts) & (span_start <= span_starts + span_lengths)) for span_start in span_starts]) \
              or any(span_starts + span_lengths > len(tokens)) :
+            i += 1
+            if i >= 10000 :
+                # we couldn't get a span set that worked, so don't corrupt, maybe not enough tokens
+                # avoids getting stuck forever in a loop
+                return tokens, 1 
             span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
             span_starts.sort()
             span_lengths = np.random.randint(min_span_len, max_span_len+1, size=num_corrupted_spans)
