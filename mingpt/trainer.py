@@ -109,16 +109,16 @@ class Trainer:
             self.iter_dt = tnow - self.iter_time
             self.iter_time = tnow
             time_per_batch.append(self.iter_dt)
-            print(19800 / (sum(time_per_batch) / len(time_per_batch)))
+            # print(19800 / (sum(time_per_batch) / len(time_per_batch)))
 
-            if self.iter_num % 500000 == 0 : 
+            if self.iter_num % 37000 == 0 : 
                 torch.save({
                     'iter_num': self.iter_num,
                     'model_config': model.config,
                     'model_state_dict': model.state_dict(),
                     'optimizer_state_dict': self.optimizer.state_dict(),
                     'trainer_config': config
-                }, f'checkpoint_{self.iter_num}.pth')
+                }, f'xl_checkpoint_{self.iter_num}.pth')
                 np.save('losses.npy', np.array(losses))
 
             # termination conditions

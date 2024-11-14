@@ -3,7 +3,7 @@ from mingpt.trainer import Trainer
 from jsonl_dataset import JSONLDataset
 
 
-dataset = JSONLDataset('/nobackup/archive/usr/dw87/pile_data_10.jsonl', head=True)
+dataset = JSONLDataset('/nobackup/archive/usr/dw87/pile_data_10.jsonl', head=False)
 
 model_config = GPT.get_default_config()
 model_config.model_type = 'gpt2-xl'
@@ -13,7 +13,7 @@ model = GPT(model_config)
 
 train_config = Trainer.get_default_config()
 train_config.learning_rate = 2e-6 
-train_config.max_iters = 10000000
+train_config.max_iters = 100000000
 train_config.num_workers = 0
 train_config.batch_size = 1
 trainer = Trainer(train_config, model, dataset)
