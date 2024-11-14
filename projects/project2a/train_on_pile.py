@@ -1,6 +1,3 @@
-from torch.utils.data.dataloader import DataLoader
-import torch
-
 from mingpt.model import GPT
 from mingpt.trainer import Trainer
 from jsonl_dataset import JSONLDataset
@@ -26,5 +23,4 @@ def batch_end_callback(trainer):
         print(f"iter_dt {trainer.iter_dt * 1000:.2f}ms; iter {trainer.iter_num}: train loss {trainer.loss.item():.5f}")
 trainer.set_callback('on_batch_end', batch_end_callback)
 
-print('running trainer')
 trainer.run()

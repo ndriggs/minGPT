@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash --login
 
 #SBATCH --time=00:30:00   # walltime
 #SBATCH --ntasks=1   # number of processor cores (i.e. tasks)
@@ -14,4 +14,5 @@
 export OMP_NUM_THREADS=$SLURM_CPUS_ON_NODE
 
 # LOAD MODULES, INSERT CODE, AND RUN YOUR PROGRAMS HERE
-python train_on_pile.py
+mamba activate mingpt_env
+python -u train_on_pile.py
