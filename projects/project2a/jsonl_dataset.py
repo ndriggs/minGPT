@@ -25,15 +25,17 @@ class JSONLDataset(Dataset):
         return len(self.data)
 
     def __getitem__(self, idx):
-        tokens = self.tokenizer(self.data[idx], truncation=True, return_tensors="pt").input_ids[0]
-        # denoising_type = np.random.choice(['S', 'R', 'X'], p=[0.5, 0.25, 0.25])
-        # if denoising_type == 'S' :
-        #     tokens, targets_start = self.sequential_denoising(self.data[idx])
-        # elif denoising_type == 'R' :
-        #     tokens, targets_start = self.regular_denoising(self.data[idx])
-        # elif denoising_type == 'X' :
-        #     tokens, targets_start = self.extreme_denoising(self.data[idx])
-        return tokens[:-1], tokens[1:]
+        # tokens = self.tokenizer(self.data[idx], padding='max_length', truncation=True, return_tensors="pt").input_ids[0]
+        denoising_type = np.random.choice(['S', 'R', 'X'], p=[0.5, 0.25, 0.25])
+        if denoising_type == 'S' :
+            tokens, targets_start = self.sequential_denoising(self.data[idx])
+        elif denoising_type == 'R' :
+            tokens, targets_start = self.regular_denoising(self.data[idx])
+        elif denoising_type == 'X' :            
+            tokens, targets_start = self.extreme_denoising(self.data[idx])
+        targets = tokens[1:]    
+        targets[:targets_start-1] = torch.full((targets_start-1), -1)            
+        return targets_start, tokens[:-1], targets
 
     def get_vocab_size(self):
         return len(self.tokenizer)
@@ -56,7 +58,9 @@ class JSONLDataset(Dataset):
              or any(span_starts + span_lengths > len(tokens)) :
             i += 1
             if i >= 10000 :
-                return tokens, 1 # we couldn't get a span set that worked, so don't corrupt, maybe not enough tokens 
+                # we couldn't get a span set that worked, so don't corrupt, maybe not enough tokens
+                # avoids getting stuck forever in a loop
+                return tokens, 1 
             span_starts = np.random.randint(len(tokens), size=num_corrupted_spans)
             span_starts.sort()
             span_lengths = np.random.randint(min_span_len, max_span_len+1, size=num_corrupted_spans)
