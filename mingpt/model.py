@@ -61,10 +61,11 @@ class CausalSelfAttention(nn.Module):
         # create causal attention with prefix mask
         mask = torch.tril(torch.ones(T, T))
         mask[:,:suffix_start] = torch.ones(T, suffix_start)
+        mask = mask.view(1, 1, T, T).to(x.device)
 
         # causal self-attention; Self-attend: (B, nh, T, hs) x (B, nh, hs, T) -> (B, nh, T, T)
         att = (q @ k.transpose(-2, -1)) * (1.0 / math.sqrt(k.size(-1)))
-        att = att.masked_fill(mask == 0, float('-inf')) # self.bias[:,:,:T,:T]
+        att = att.masked_fill(mask == 0, float('-inf')) # self.bias[:,:,:T,:T] == 0
         att = F.softmax(att, dim=-1)
         att = self.attn_dropout(att)
         y = att @ v # (B, nh, T, T) x (B, nh, T, hs) -> (B, nh, T, hs)
