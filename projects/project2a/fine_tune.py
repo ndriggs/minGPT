@@ -13,8 +13,6 @@ def parse_args():
 def main() : 
     args = parse_args()
 
-    print('its starting!!!!!')
-
     dataset = JSONLDataset('/nobackup/archive/usr/dw87/pile_data_10.jsonl', head=False)
     checkpoint = torch.load(f'projects/project2a/xl_checkpoint_{args.starting_iter}.pth', weights_only=False)
     model_config = checkpoint['model_config']

@@ -1,21 +1,29 @@
 from mingpt.model import GPT
 from transformers import AutoTokenizer
 import torch
+import argparse
+import sys
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--checkpoint_path', type=int)
+    return parser.parse_args()
 
 def evaluate_mingpt_hellaswag(checkpoint_path):
     from lm_eval import evaluator # strange workaround for a weird circular imports error
     from lm_eval.models.huggingface import HFLM 
-    checkpoint = torch.load(checkpoint_path, weights_only=False, map_location=torch.device('cpu'))
+    checkpoint = torch.load(checkpoint_path, weights_only=False, map_location=torch.device('cuda'))
     lm = GPT(checkpoint['model_config'])
     lm.load_state_dict(checkpoint['model_state_dict'])
+    lm = lm.to('cuda')
     results = evaluator.simple_evaluate(
-        model=HFLM(pretrained=lm, tokenizer=create_tokenizer(), device="cpu"),
-        tasks=["hellaswag"],
+        model=HFLM(pretrained=lm, tokenizer=create_tokenizer(), device="cuda"),
+        tasks=["hellaswag", "anli"], 
         num_fewshot=0,
         batch_size=32,
-        limit=10,
+        limit=250,
     )
-    return results['results']['hellaswag']['acc,none']
+    return results # results['results']['hellaswag']['acc,none'], 
 
 def create_tokenizer() :
     # recreate the same tokenizer used in training
@@ -30,6 +38,12 @@ def create_tokenizer() :
 
     return tokenizer 
 
+def main() :
+    results = evaluate_mingpt_hellaswag(f'projects/project2a/xl_checkpoint_{sys.argv[1]}.pth') 
+    print('anli_r1', results['results']['anli_r1']['acc,none'])
+    print('anli_r2', results['results']['anli_r2']['acc,none'])
+    print('anli_r3', results['results']['anli_r3']['acc,none'])
+    print('hellaswag', results['results']['hellaswag']['acc,none'])
+
 if __name__ == '__main__' :
-    score = evaluate_mingpt_hellaswag("checkpoint_25200.pth")
-    print(score)
+    main()

@@ -475,7 +475,7 @@ class HFLM(TemplateLM):
                 self.backend = "seq2seq"
                 eval_logger.info(f"Using model type '{backend}'")
             elif (
-                getattr(self.config, "model_type") in MODEL_FOR_CAUSAL_LM_MAPPING_NAMES
+                getattr(self.config, "model_type") in ['gpt2-xl'] # MODEL_FOR_CAUSAL_LM_MAPPING_NAMES
             ):
                 self.backend = "causal"
                 eval_logger.info(f"Using model type '{backend}'")
